@@ -31,6 +31,21 @@ button:active{transform:scale(.96)}
 #feedback{font-size:19px;font-weight:bold;min-height:45px;margin:12px}
 #next{margin-top:10px}
 @media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}}
+  
+.hero img{
+  display:block;
+  width:100%;
+  height:150px;
+  object-fit:contain;
+  margin-bottom:8px;
+}
+.character-img{
+  display:block;
+  width:140px;
+  height:180px;
+  object-fit:contain;
+  margin:10px auto;
+}
 </style>
 </head>
 <body>
@@ -70,7 +85,14 @@ button:active{transform:scale(.96)}
 const $=id=>document.getElementById(id);
 const names=["نور","لين","أنس","نجم"];
 const dreams=["طبيبة","عالمة","لاعب كرة","طيار"];
-const faces=["👧🏻👓","👧🏻🎀","👦🏿","👦🏻"];
+const faces=
+const faces=[
+  "Noor.PNG",
+  "Leen.PNG",
+  "Anas.PNG",
+  "Najm .PNG"
+];
+
 let hero=0,stage=0,score=0;
 let timer=null,spawn=null,locked=false;
 let opened=[],matches=0,question=0;
