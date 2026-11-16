@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>مغامرة عيونك | Eye Heroes</title>
+<title>مغامرات عالم سايت</title>
 
 <style>
 * {
@@ -199,8 +199,8 @@ button:active {
 </div>
 
 <section id="home">
-  <h1>👀 مغامرة عيونك</h1>
-  <p>أهلًا بك في عالم أبطال العيون!</p>
+  <h1>🚀 مغامرات عالم سايت</h1>
+  <p>أهلًا بك في عالم سايت، حيث تبدأ مغامرات أبطال العيون!</p>
   <h2>اختر بطلك المفضل</h2>
 
   <div id="heroes" class="grid"></div>
@@ -227,7 +227,7 @@ button:active {
   <img id="winnerImage" class="finish-img" alt="البطل الفائز">
 
   <h2 id="result"></h2>
-  <p>🏆 أنت الآن من أبطال حماية العيون!</p>
+  <p>🏆 أنت الآن من أبطال حماية العيون في عالم سايت!</p>
 
   <button onclick="restart()">العب مرة ثانية 🔄</button>
 </section>
@@ -270,6 +270,9 @@ let opened = [];
 let matches = 0;
 let question = 0;
 
+let motions = [];
+let pendingAnswer = null;
+
 const questions = [
   {
     q: "إذا دخل شيء في عينك، وش تسوي؟",
@@ -305,7 +308,7 @@ names.forEach((name,i) => {
   b.className = "hero" + (i === 0 ? " selected" : "");
 
   b.innerHTML =
-    '<img src="' + encodeURI(faces[i]) + '" alt="' + name + '">' +
+    '<img src="' + faces[i] + '" alt="' + name + '">' +
     name +
     '<br><small>' + dreams[i] + ' المستقبل</small>';
 
@@ -340,6 +343,14 @@ function update() {
 function stopTimers() {
   clearInterval(timer);
   clearInterval(spawn);
+  clearTimeout(pendingAnswer);
+
+  timer = null;
+  spawn = null;
+  pendingAnswer = null;
+
+  motions.forEach(clearInterval);
+  motions = [];
 }
 
 function start() {
@@ -367,6 +378,7 @@ function load() {
 
 function complete(message) {
   stopTimers();
+  locked = true;
 
   $("feedback").textContent = message;
 
@@ -380,7 +392,7 @@ function advance() {
   stage++;
 
   if(stage === 3) {
-    $("winnerImage").src = encodeURI(faces[hero]);
+    $("winnerImage").src = faces[hero];
     $("winnerImage").alt = names[hero];
 
     $("result").textContent =
@@ -434,6 +446,7 @@ function catchGame() {
     let motion = setInterval(() => {
       if(!item.isConnected) {
         clearInterval(motion);
+        motions = motions.filter(x => x !== motion);
         return;
       }
 
@@ -443,11 +456,14 @@ function catchGame() {
       if(y > 260) {
         item.remove();
         clearInterval(motion);
+        motions = motions.filter(x => x !== motion);
       }
     },30);
 
+    motions.push(motion);
+
     item.onclick = () => {
-      if(!item.isConnected) return;
+      if(!item.isConnected || locked) return;
 
       score = Math.max(0,score + (healthy ? 2 : -1));
       update();
@@ -457,6 +473,7 @@ function catchGame() {
 
       item.remove();
       clearInterval(motion);
+      motions = motions.filter(x => x !== motion);
     };
   }
 
@@ -483,8 +500,12 @@ function memoryGame() {
 
   let symbols = ["👓","🕶️","🥕","👀"];
 
-  let deck = [...symbols,...symbols]
-    .sort(() => Math.random() - .5);
+  let deck = [...symbols,...symbols];
+
+  for(let i = deck.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [deck[i],deck[j]] = [deck[j],deck[i]];
+  }
 
   opened = [];
   matches = 0;
@@ -566,7 +587,7 @@ function ask() {
 
   $("content").innerHTML =
     '<img class="character-img" src="' +
-    encodeURI(faces[hero]) +
+    faces[hero] +
     '" alt="' + names[hero] + '">' +
     '<h3>' + q.q + '</h3>';
 
@@ -594,7 +615,8 @@ function ask() {
 
       update();
 
-      setTimeout(() => {
+      pendingAnswer = setTimeout(() => {
+        pendingAnswer = null;
         question++;
         locked = false;
 
